@@ -10,5 +10,4 @@ urlpatterns = [
          ReporteDeleteView.as_view(), name='reporte-eliminar'),
     path('historial/<int:pk>/', historial_alumno, name='historial_alumno'),
     path('reporte/<int:pk>/', detalle_reporte, name='detalle-reporte'),
-
 ]

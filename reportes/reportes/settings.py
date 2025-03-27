@@ -2,8 +2,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_kvac$em4&j73!@&*rp^a^1oivgn8ul8p#&$5(tv!qcx6t)^gs'
 DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.51']
 
-ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'jazzmin',
     'django.contrib.admin',
@@ -46,10 +46,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'reportes.wsgi.application'
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sistema_toece',  # Nombre de la base de datos
+        'USER': 'root',
+        'PASSWORD': 'Jd721744232004',  # Cambia esto por la contraseña de MySQL
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
+
 
 JAZZMIN_SETTINGS = {
     "site_title": "Sistema de Reportes",
@@ -71,7 +76,7 @@ JAZZMIN_SETTINGS = {
         "auth.User": "total",
         "alumnos.ReporteAlumno": "chart",
     },
-    "theme": "yeti",
+    "theme": "solar",
 }
 
 

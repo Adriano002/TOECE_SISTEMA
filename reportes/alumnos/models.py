@@ -1,19 +1,16 @@
 from django.db import models
 from django.utils.timezone import now
 
-# Tabla de Estudiantes
-
 
 class Estudiante(models.Model):
-    dni = models.CharField(max_length=8, blank=True)
-    nombre = models.CharField(max_length=100, unique=True)
+    nombre = models.CharField(max_length=100)
+    dni = models.CharField(max_length=8, blank=True, null=True)
     grado = models.CharField(max_length=1)
-    seccion = models.CharField(max_length=15, blank=True)
+    seccion = models.CharField(max_length=1, blank=True)
+    nombredeseccion = models.CharField(max_length=25, blank=True)
 
     def __str__(self):
-        return f"{self.dni} - {self.nombre}"
-
-# tabla tutor
+        return f"{self.nombre} - {self.grado} -{self.seccion} - {self.nombredeseccion} "
 
 
 class Tutor(models.Model):
@@ -34,48 +31,50 @@ class Padre(models.Model):
     nombre = models.CharField(max_length=100)
     celular = models.CharField(max_length=15, blank=True, null=True)
     estudiantes = models.ManyToManyField(
-        'Estudiante', related_name='padres')  # Relación con estudiantes
+        'Estudiante', related_name='padres', blank=True)
+
+    def __str__(self):
+        return f"{self.nombre}"
 
 
 class Madre(models.Model):
     nombre = models.CharField(max_length=100)
     celular = models.CharField(max_length=15, blank=True, null=True)
     estudiantes = models.ManyToManyField(
-        'Estudiante', related_name='madres')  # Relación con estudiantes
+        'Estudiante', related_name='madres', blank=True)
+
+    def __str__(self):
+        return f"{self.nombre}"
 
 
 class Apoderado(models.Model):
     nombre = models.CharField(max_length=100)
-    celular = models.CharField(max_length=15, blank=True, null=True)
+    celular = models.CharField(max_length=15, blank=True)
     estudiantes = models.ManyToManyField(
-        'Estudiante', related_name='apoderados')  # Relación con estudiantes
+        'Estudiante', related_name='apoderados', blank=True)
+
+    def __str__(self):
+        return f"{self.nombre}"
 
 
 class Observacion(models.Model):
-    descripcion = models.TextField()
-    fecha = models.DateField(auto_now_add=True)
     estudiante = models.ForeignKey(
-        # Permitir valores nulos
-        'Estudiante', on_delete=models.CASCADE, related_name='observaciones', null=True, blank=True
-    )
+        Estudiante, on_delete=models.CASCADE, null=True, blank=True)
+    descripcion = models.TextField()
 
-
-# Tabla de Acciones de Respuesta
+    def __str__(self):
+        return f"Observación de {self.estudiante}"
 
 
 class AccionRespuesta(models.Model):
     nombre = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
-        return f"Accion tomada {self.nombre}"
-
-
-# Tabla de Historial de Alumnos
+        return f"{self.nombre}"
 
 
 class ReporteAlumno(models.Model):
-    estudiante = models.ForeignKey(
-        Estudiante, on_delete=models.CASCADE)  # Obligatorio
+    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE)
     padre = models.ForeignKey(
         Padre, on_delete=models.SET_NULL, null=True, blank=True)
     madre = models.ForeignKey(
@@ -96,32 +95,46 @@ class ReporteAlumno(models.Model):
             ("siseve", "SISEVE"),
             ("tocamientos_indebidos", "Tocamientos Indebidos")
         ]
-    )  # Obligatorio
+    )
     accion_respuesta = models.ForeignKey(
         AccionRespuesta, on_delete=models.SET_NULL, null=True, blank=True)
     tutor = models.ForeignKey(
         Tutor, on_delete=models.SET_NULL, null=True, blank=True)
     observacion = models.ForeignKey(
         Observacion, on_delete=models.SET_NULL, null=True, blank=True)
-    fecha_reporte = models.DateTimeField(default=now)  # 🕒 Guarda fecha y hora
+    fecha = models.DateTimeField(default=now)
+
+    def save(self, *args, **kwargs):
+        """ Guarda el reporte y lo asocia automáticamente al historial del estudiante """
+        super().save(*args, **kwargs)  # Guarda el reporte primero
+
+        # Verifica si el estudiante ya tiene un historial, si no, lo crea
+        historial, creado = HistorialAlumno.objects.get_or_create(
+            estudiante=self.estudiante)
+
+        # Agrega el reporte actual al historial sin borrar los anteriores
+        historial.reportes.add(self)
+
+        # Guarda el historial actualizado
+        historial.save()
 
     def __str__(self):
-        return f"Reporte de {self.estudiante} - {self.condicion} ({self.fecha_reporte.strftime('%d/%m/%Y %H:%M')})"
+        return f"Reporte de {self.estudiante} - {self.condicion} - {self.fecha.strftime('%d/%m/%Y %H:%M:%S')}"
 
 
 class HistorialAlumno(models.Model):
     estudiante = models.OneToOneField(
         Estudiante, on_delete=models.CASCADE, related_name='historial')
-    reportes = models.ManyToManyField(
-        ReporteAlumno, blank=True)  # Relación con reportes
+    reportes = models.ManyToManyField(ReporteAlumno, blank=True)
+    fecha = models.DateTimeField(default=now)
 
     def actualizar_historial(self):
-        """Actualizar el historial con los reportes existentes del estudiante."""
+        """ Obtiene todos los reportes del estudiante y los agrega al historial """
         reportes_del_estudiante = ReporteAlumno.objects.filter(
             estudiante=self.estudiante)
-        # Asigna los reportes al historial
+        # Agregar todos los reportes
         self.reportes.set(reportes_del_estudiante)
         self.save()
 
     def __str__(self):
-        return f"Historial de {self.estudiante}"
+        return f"Historial de {self.estudiante} - {self.fecha.strftime('%d/%m/%Y %H:%M:%S')}"

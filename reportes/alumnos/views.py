@@ -1,4 +1,3 @@
-from django.shortcuts import render, get_object_or_404
 from .models import HistorialAlumno, Estudiante, ReporteAlumno
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
