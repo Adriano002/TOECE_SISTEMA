@@ -2,7 +2,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_kvac$em4&j73!@&*rp^a^1oivgn8ul8p#&$5(tv!qcx6t)^gs'
 DEBUG = True
-ALLOWED_HOSTS = ['toece.pythonanywhere.com']
+ALLOWED_HOSTS = ['toece.pythonanywhere.com', '127.0.0.1']
 
 INSTALLED_APPS = [
     'jazzmin',
