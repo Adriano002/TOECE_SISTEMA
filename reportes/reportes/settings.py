@@ -47,10 +47,10 @@ WSGI_APPLICATION = 'reportes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sistema_toece',  # Nombre de la base de datos
-        'USER': 'root',
+        'NAME': 'Toece$TOECE_BD',  # Nombre de la base de datos
+        'USER': 'Toece',
         'PASSWORD': 'Jd721744232004',  # Cambia esto por la contraseña de MySQL
-        'HOST': 'localhost',
+        'HOST': 'Toece.mysql.pythonanywhere-services.com',
         'PORT': '3306',
     }
 }
